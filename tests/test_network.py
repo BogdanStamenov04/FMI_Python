@@ -1,18 +1,17 @@
-import socket
-from unittest.mock import Mock, patch
-from cryptography.fernet import Fernet
 import pytest
+from unittest.mock import Mock, patch
+from typing import cast
+from cryptography.fernet import Fernet
 from src.client.network import NetworkClient
 
 
 @pytest.fixture
-def client():
+def client() -> NetworkClient:
     return NetworkClient(Mock(), Mock(), Mock())
 
 
-def test_connect_success(client):
+def test_connect_success(client: NetworkClient) -> None:
     """Test connection and login flow."""
-    # Generate a valid key for the mock response
     valid_key = Fernet.generate_key().decode('utf-8')
 
     with patch('socket.socket') as mock_sock_cls:
@@ -23,7 +22,6 @@ def test_connect_success(client):
 
         with patch('src.client.network.receive_json', return_value=response):
             with patch('src.client.network.send_json'):
-                # We mock threading to prevent actual thread start
                 with patch('threading.Thread'):
                     success, msg = client.connect("user", "pass")
 
@@ -32,7 +30,7 @@ def test_connect_success(client):
         assert client.username == "user"
 
 
-def test_connect_fail(client):
+def test_connect_fail(client: NetworkClient) -> None:
     with patch('socket.socket'):
         response = {"status": "error", "msg": "Fail"}
         with patch('src.client.network.receive_json', return_value=response):
@@ -43,38 +41,32 @@ def test_connect_fail(client):
         assert msg == "Fail"
 
 
-def test_send_methods(client):
+def test_send_methods(client: NetworkClient) -> None:
     """Test helper methods for sending requests."""
     client.running = True
     client.sock = Mock()
-
-    # Mock crypto for send_message
     client.crypto = Mock()
     client.crypto.encrypt_message.return_value = "enc"
 
     with patch('src.client.network.send_json') as mock_send:
-        # Message
         client.send_message("u2", "hi")
         mock_send.assert_called_with(client.sock, {"action": "msg", "to": "u2", "text": "enc"})
 
-        # Group
         client.create_group(" g1 ")
         mock_send.assert_called_with(client.sock, {"action": "create_group", "group_name": "#g1"})
 
-        # Public Room
         client.create_public_room(" pub ", "tag")
         mock_send.assert_called_with(
             client.sock, {"action": "create_public_room", "room_name": "&pub", "tags": "tag"})
 
 
-def test_listen_loop(client):
+def test_listen_loop(client: NetworkClient) -> None:
     """Test the receiving loop."""
     client.running = True
     client.sock = Mock()
     client.crypto = Mock()
     client.crypto.decrypt_message.return_value = "decrypted"
 
-    # Sequence of incoming messages
     incoming = [
         {"action": "msg", "sender": "u2", "text": "enc"},
         {"action": "data_update", "active_users": ["u2"]},
@@ -85,7 +77,7 @@ def test_listen_loop(client):
     with patch('src.client.network.receive_json', side_effect=incoming):
         client.listen()
 
-        # Check callbacks
-        client.on_msg.assert_called()
-        client.on_data.assert_called()
-        client.on_history.assert_called()
+        # Използваме cast(Mock, ...), за да проверим assert_called
+        cast(Mock, client.on_msg).assert_called()
+        cast(Mock, client.on_data).assert_called()
+        cast(Mock, client.on_history).assert_called()

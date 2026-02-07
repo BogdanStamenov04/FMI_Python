@@ -1,6 +1,7 @@
 """
-Client network module. Handles socket connections, authentication,
-encryption integration, and background listening threads.
+Client network module.
+Handles socket connections, authentication, encryption integration,
+and background listening threads for the chat application.
 """
 
 import socket
@@ -21,11 +22,20 @@ class NetworkClient:
                  on_data_callback: Callable[[List[str], List[str], List[str],
                                              List[str], List[Tuple[str, str]]], None],
                  on_history_callback: Callable[[str, List[Dict[str, Any]]], None]) -> None:
+        """
+        Initializes the NetworkClient.
+
+        Args:
+            on_msg_callback: Callback for receiving real-time messages.
+            on_data_callback: Callback for updating UI lists (friends, rooms, etc).
+            on_history_callback: Callback for receiving chat history.
+        """
         self.sock: Optional[socket.socket] = None
         self.username: str = ""
-        self.on_msg: Callable = on_msg_callback
-        self.on_data: Callable = on_data_callback
-        self.on_history: Callable = on_history_callback
+        self.on_msg: Callable[[Dict[str, Any]], None] = on_msg_callback
+        self.on_data: Callable[[List[str], List[str], List[str],
+                                List[str], List[Tuple[str, str]]], None] = on_data_callback
+        self.on_history: Callable[[str, List[Dict[str, Any]]], None] = on_history_callback
         self.running: bool = False
         self.crypto: Optional[CryptoManager] = None
 
@@ -33,6 +43,9 @@ class NetworkClient:
                 is_register: bool = False) -> Tuple[bool, str]:
         """
         Connects to the server, sends login/register request, and initializes crypto.
+
+        Returns:
+            Tuple containing (Success Boolean, Message String).
         """
         try:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -69,7 +82,7 @@ class NetworkClient:
             return False, str(e)
 
     def refresh_data(self) -> None:
-        """Requests updated data (friends, rooms, active users) from server."""
+        """Requests updated data (friends, rooms, active users) from the server."""
         if self.running and self.sock:
             send_json(self.sock, {"action": "get_data"})
 
@@ -79,12 +92,18 @@ class NetworkClient:
             send_json(self.sock, {"action": "get_history", "target": target})
 
     def send_friend_request(self, t: str) -> None:
-        """Sends a friend request to target."""
+        """Sends a friend request to the target user."""
         if self.running and self.sock:
             send_json(self.sock, {"action": "send_friend_request", "target": t.strip()})
 
     def handle_request(self, s: str, d: str) -> None:
-        """Accepts or declines a friend request."""
+        """
+        Accepts or declines a friend request.
+        
+        Args:
+            s: Sender username.
+            d: Decision ('accept' or 'decline').
+        """
         if self.running and self.sock:
             send_json(self.sock, {"action": "handle_request", "sender": s, "decision": d})
 
@@ -120,7 +139,10 @@ class NetworkClient:
             send_json(self.sock, {"action": "msg", "to": recipient, "text": encrypted})
 
     def listen(self) -> None:
-        """Background loop to receive messages and updates from server."""
+        """
+        Background loop to receive messages and updates from server.
+        Handles decryption and dispatches data to callbacks.
+        """
         while self.running and self.sock:
             data = receive_json(self.sock)
             if not data:

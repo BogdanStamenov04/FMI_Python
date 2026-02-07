@@ -1,19 +1,19 @@
 import socket
 import struct
 import json
-from unittest.mock import Mock
+from unittest.mock import Mock, MagicMock
+from typing import Any
 import pytest
 from src.common.protocol import send_json, receive_json
 
 
-def test_send_json_success():
+def test_send_json_success() -> None:
     """Test successfully sending a JSON message."""
     mock_socket = Mock(spec=socket.socket)
     data = {"test": "data", "cyrillic": "здравей"}
 
     send_json(mock_socket, data)
 
-    # Verify exact bytes sent
     json_bytes = json.dumps(data, ensure_ascii=False).encode('utf-8')
     header = struct.pack('!I', len(json_bytes))
     expected_call = header + json_bytes
@@ -21,7 +21,7 @@ def test_send_json_success():
     mock_socket.sendall.assert_called_once_with(expected_call)
 
 
-def test_send_json_exception(capsys):
+def test_send_json_exception(capsys: Any) -> None:
     """Test that exceptions during send are caught and printed."""
     mock_socket = Mock(spec=socket.socket)
     mock_socket.sendall.side_effect = Exception("Connection lost")
@@ -32,28 +32,26 @@ def test_send_json_exception(capsys):
     assert "Error sending: Connection lost" in captured.out
 
 
-def test_receive_json_success():
+def test_receive_json_success() -> None:
     """Test successfully receiving a JSON message."""
     mock_socket = Mock(spec=socket.socket)
     data = {"key": "value"}
     json_bytes = json.dumps(data).encode('utf-8')
     header = struct.pack('!I', len(json_bytes))
 
-    # Mock recv to return header first, then body
     mock_socket.recv.side_effect = [header, json_bytes]
 
     result = receive_json(mock_socket)
     assert result == data
 
 
-def test_receive_json_fragmented():
+def test_receive_json_fragmented() -> None:
     """Test receiving a message that arrives in chunks."""
     mock_socket = Mock(spec=socket.socket)
     data = {"key": "long_value" * 10}
     json_bytes = json.dumps(data).encode('utf-8')
     header = struct.pack('!I', len(json_bytes))
 
-    # Split body into two chunks
     chunk1 = json_bytes[:10]
     chunk2 = json_bytes[10:]
 
@@ -63,27 +61,23 @@ def test_receive_json_fragmented():
     assert result == data
 
 
-def test_receive_json_connection_closed_header():
+def test_receive_json_connection_closed_header() -> None:
     """Test receiving None when connection closes at header."""
     mock_socket = Mock(spec=socket.socket)
-    mock_socket.recv.return_value = b""  # Empty bytes = EOF
-
+    mock_socket.recv.return_value = b""
     assert receive_json(mock_socket) is None
 
 
-def test_receive_json_connection_closed_body():
+def test_receive_json_connection_closed_body() -> None:
     """Test receiving None when connection closes mid-body."""
     mock_socket = Mock(spec=socket.socket)
     header = struct.pack('!I', 100)
-    # Return header, then nothing
     mock_socket.recv.side_effect = [header, b""]
-
     assert receive_json(mock_socket) is None
 
 
-def test_receive_json_exception():
+def test_receive_json_exception() -> None:
     """Test handling of exceptions during receive."""
     mock_socket = Mock(spec=socket.socket)
     mock_socket.recv.side_effect = Exception("Socket error")
-
     assert receive_json(mock_socket) is None

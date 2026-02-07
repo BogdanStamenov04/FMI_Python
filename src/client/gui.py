@@ -24,7 +24,7 @@ ctk.set_default_color_theme("dark-blue")
 # pylint: disable=too-many-instance-attributes
 
 
-class MessengerApp(ctk.CTk):
+class MessengerApp(ctk.CTk):  # type: ignore[misc]
     """
     Main GUI class using CustomTkinter.
     Handles UI construction, event binding, and updates.
@@ -148,15 +148,15 @@ class MessengerApp(ctk.CTk):
         ).pack(fill="x", pady=2)
 
         # 2. PUBLIC ROOMS
+        # FIX: Removed unnecessary lambda (Pylint W0108)
         ctk.CTkButton(
             self.tab_public, text="🔄 Refresh Rooms",
-            command=lambda: self.client.refresh_data(),
+            command=self.client.refresh_data,  # Direct reference
             height=25, fg_color="#e67e22"
         ).pack(fill="x", pady=5)
 
         self.tag_search = ctk.CTkEntry(self.tab_public, placeholder_text="🔍 Filter by tag...")
         self.tag_search.pack(fill="x", padx=2, pady=5)
-        # Using lambda _e to denote unused event argument
         self.tag_search.bind("<KeyRelease>", lambda _e: self.filter_public_rooms())
 
         self.public_list_scroll = ctk.CTkScrollableFrame(self.tab_public, fg_color="transparent")
@@ -173,9 +173,11 @@ class MessengerApp(ctk.CTk):
         ).pack(fill="x", pady=2)
 
         # 3. ONLINE
+        # FIX: Removed unnecessary lambda (Pylint W0108)
         ctk.CTkButton(
             self.tab_online, text="🔄 Refresh",
-            command=lambda: self.client.refresh_data(), height=25
+            command=self.client.refresh_data,  # Direct reference
+            height=25
         ).pack(fill="x", pady=5)
         self.online_scroll = ctk.CTkScrollableFrame(self.tab_online, fg_color="transparent")
         self.online_scroll.pack(fill="both", expand=True)
@@ -208,9 +210,8 @@ class MessengerApp(ctk.CTk):
     def register(self) -> None:
         """Handles registration action."""
         u = self.user_entry.get().strip()
-        p = self.pass_entry.get().strip()  # Чистим и паролата за проверка
+        p = self.pass_entry.get().strip()
 
-        # ВАЛИДАЦИЯ НА КЛИЕНТА
         if not u or not p:
             self.status_label.configure(text="Fields cannot be empty!", text_color=COLOR_RED)
             return
@@ -287,7 +288,6 @@ class MessengerApp(ctk.CTk):
         t = self.msg_entry.get()
         if t and self.current_chat_target:
             self.client.send_message(self.current_chat_target, t)
-            # Optimistic UI update
             self.append_msg(self.current_chat_target, f"Me: {t}\n")
             self.msg_entry.delete(0, "end")
 

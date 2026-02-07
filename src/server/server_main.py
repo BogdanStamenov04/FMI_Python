@@ -51,28 +51,14 @@ class ChatServer:
                 if not req:
                     break
 
-                # Trim string inputs
                 self._trim_request_inputs(req)
-                action = req.get("action")
 
-                # Delegate actions to helper methods to reduce complexity
-                if action == "register":
-                    self._handle_register(conn, req)
-                elif action == "login":
-                    current_user = self._handle_login(conn, req)
-                elif action == "get_data":
-                    if current_user:
-                        self._refresh_client_data(current_user)
-                elif action == "get_history":
-                    if current_user:
-                        self._handle_get_history(conn, current_user, req)
-                elif action == "msg":
-                    if current_user:
-                        self._handle_msg(conn, current_user, req)
-                else:
-                    # FIX: Проверяваме дали action е стринг, преди да го подадем
-                    if current_user and isinstance(action, str):
-                        self._handle_other_actions(current_user, req, action)
+                # Use a helper method to reduce branching in the main loop
+                new_user = self._process_action(conn, req, current_user)
+
+                # If login was successful, update current_user
+                if new_user:
+                    current_user = new_user
 
         except Exception as e:  # pylint: disable=broad-exception-caught
             print(f"[ERROR] {e}")
@@ -88,12 +74,37 @@ class ChatServer:
             if field in req and isinstance(req[field], str):
                 req[field] = req[field].strip()
 
+    def _process_action(self, conn: socket.socket,
+                        req: Dict[str, Any], current_user: Optional[str]) -> Optional[str]:
+        """
+        Dispatches the request to the appropriate handler.
+        Returns the username if a login occurred, otherwise None.
+        """
+        action = req.get("action")
+
+        if action == "register":
+            self._handle_register(conn, req)
+        elif action == "login":
+            return self._handle_login(conn, req)
+        elif action == "get_data":
+            if current_user:
+                self._refresh_client_data(current_user)
+        elif action == "get_history":
+            if current_user:
+                self._handle_get_history(conn, current_user, req)
+        elif action == "msg":
+            if current_user:
+                self._handle_msg(conn, current_user, req)
+        elif current_user and isinstance(action, str):
+            self._handle_other_actions(current_user, req, action)
+
+        return None
+
     def _handle_register(self, conn: socket.socket, req: Dict[str, Any]) -> None:
         """Handles user registration."""
         username = req.get("username", "")
         password = req.get("password", "")
 
-        # ВАЛИДАЦИЯ: Проверяваме дали са празни
         if not username or not password:
             send_json(conn, {"status": "error", "msg": "Username and password cannot be empty!"})
             return

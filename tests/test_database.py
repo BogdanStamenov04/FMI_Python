@@ -1,16 +1,15 @@
 import pytest
 import os
 from unittest.mock import patch
+from typing import Generator, Any
 from src.server.database import Database
 
 
 @pytest.fixture
-def db(tmp_path):
+def db(tmp_path: Any) -> Generator[Database, None, None]:
     """
     Fixture to create a DB instance using a temporary file.
-    Using a file ensures persistence across connection open/close calls.
     """
-    # tmp_path е вграден фикчър на pytest, който създава временна папка
     db_file = tmp_path / "test_db.sqlite"
 
     with patch('src.server.database.DB_PATH', str(db_file)):
@@ -18,7 +17,7 @@ def db(tmp_path):
         yield database
 
 
-def test_create_tables(db):
+def test_create_tables(db: Database) -> None:
     """Ensure tables are created."""
     conn = db.get_connection()
     cursor = conn.cursor()
@@ -32,7 +31,7 @@ def test_create_tables(db):
     conn.close()
 
 
-def test_register_login(db):
+def test_register_login(db: Database) -> None:
     assert db.register_user("ivan", "pass123") == "success"
     # Duplicate
     assert db.register_user("ivan", "pass123") == "taken"
@@ -42,20 +41,17 @@ def test_register_login(db):
     assert db.check_login("peter", "pass123") is False
 
 
-def test_friend_request_flow(db):
+def test_friend_request_flow(db: Database) -> None:
     db.register_user("A", "p")
     db.register_user("B", "p")
 
-    # 1. Send request
     assert db.send_friend_request("A", "B") == "success"
     assert db.send_friend_request("A", "B") == "already_sent"
     assert db.send_friend_request("A", "C") == "not_found"
     assert db.send_friend_request("A", "A") == "error"
 
-    # 2. Check pending
     assert db.get_pending_requests("B") == ["A"]
 
-    # 3. Handle request (Accept)
     db.handle_request("A", "B", "accept")
 
     friends_a = db.get_friends_list("A")
@@ -63,16 +59,15 @@ def test_friend_request_flow(db):
     assert "B" in friends_a
     assert "A" in friends_b
 
-    # 4. Try sending request again
     assert db.send_friend_request("A", "B") == "already_friends"
 
 
-def test_groups(db):
+def test_groups(db: Database) -> None:
     db.register_user("Creator", "p")
     db.register_user("Joiner", "p")
 
     assert db.create_group("Group1", "Creator") is True
-    assert db.create_group("Group1", "Joiner") is False  # Duplicate name
+    assert db.create_group("Group1", "Joiner") is False
 
     assert db.join_group("Group1", "Joiner") is True
     assert db.join_group("NonExistent", "Joiner") is False
@@ -85,7 +80,7 @@ def test_groups(db):
     assert "Group1" in user_groups
 
 
-def test_public_rooms(db):
+def test_public_rooms(db: Database) -> None:
     assert db.create_public_room("Room1", "fun", "Creator") is True
     assert db.create_public_room("Room1", "fun", "Creator") is False
 
@@ -93,7 +88,7 @@ def test_public_rooms(db):
     assert ("Room1", "fun") in rooms
 
 
-def test_messages_history(db):
+def test_messages_history(db: Database) -> None:
     db.store_message("A", "B", "encrypted_blob")
     db.store_message("B", "A", "reply_blob")
 
