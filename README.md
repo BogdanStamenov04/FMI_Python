@@ -1,20 +1,20 @@
-# 🔒 Secure Messenger
+# Secure Messenger
 
 A secure, end-to-end encrypted messaging application with a modern GUI built using Python, CustomTkinter, and cryptography libraries.
 
-## ✨ Features
+## Features
 
-- **🔐 Secure Communication**: End-to-end encryption for all messages
-- **👥 User Management**: Registration, login, and authentication system
-- **💬 Multiple Chat Modes**: 
+- **Secure Communication**: End-to-end encryption for all messages
+- **User Management**: Registration, login, and authentication system
+-  Multiple Chat Modes**: 
   - Direct messaging between users
   - Public chat rooms
-- **📝 Persistent Storage**: SQLite database for message history and user data
-- **🎨 Modern GUI**: Clean, dark-themed interface using CustomTkinter
-- **🔄 Real-time Updates**: Live message synchronization across clients
-- **📊 High Test Coverage**: 90% code coverage with comprehensive unit tests
+- **Persistent Storage**: SQLite database for message history and user data
+- **Modern GUI**: Clean, dark-themed interface using CustomTkinter
+- **Real-time Updates**: Live message synchronization across clients
+- **High Test Coverage**: 90% code coverage with comprehensive unit tests
 
-## 🏗️ Project Structure
+## Project Structure
 
 ```
 FMI_Python/
@@ -33,7 +33,7 @@ FMI_Python/
 └── pyproject.toml          # Project configuration
 ```
 
-## 🚀 Quick Start with UV
+## Quick Start with UV
 
 This project uses [uv](https://github.com/astral-sh/uv) - an extremely fast Python package installer and resolver. It's 10-100x faster than pip!
 
@@ -58,7 +58,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/BogdanStamenov04/FMI_Python
    cd FMI_Python
    ```
 
@@ -67,7 +67,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
    uv sync
    ```
 
-**That's it!** 🎉 This single command will:
+**That's it!** This single command will:
 - Create a virtual environment (`.venv`)
 - Install all dependencies from the lockfile (`uv.lock`)
 - Install the project in editable mode
@@ -75,34 +75,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 > **Note**: You don't need to manually activate the virtual environment. Use `uv run` to execute commands (see below).
 
-## 📚 Common UV Commands
-
-### Daily Development
-```powershell
-uv run pytest                              # Run tests with coverage
-uv run python -m src.server.server_main    # Start server
-uv run python -m src.client.gui            # Start client GUI
-uv run mypy src                            # Type checking
-uv run pylint src                          # Code linting
-```
-
-### Managing Dependencies
-```powershell
-# Add a new dependency:
-uv add package-name        # Adds to pyproject.toml and updates lockfile
-
-# Remove a dependency:
-uv remove package-name     # Removes from pyproject.toml and updates lockfile
-
-# Update dependencies to latest compatible versions:
-uv lock --upgrade          # Update lockfile
-uv sync                    # Install updated dependencies
-
-# Sync after pulling changes (if lockfile changed):
-uv sync
-```
-
-## 🎮 Usage
+## Usage
 
 ### Running the Server
 
@@ -123,7 +96,7 @@ This launches the GUI application where you can:
 2. Start chatting with other users
 3. Create or join public rooms
 
-## 🧪 Testing
+##  Testing
 
 ### Run All Tests
 
@@ -157,7 +130,7 @@ The project maintains **90% test coverage** across all modules:
 - `network.py`: 87%
 - `server_main.py`: 78%
 
-## 🛠️ Development Tools
+## Development Tools
 
 ### Type Checking with MyPy
 
@@ -177,7 +150,7 @@ uv run pylint src
 uv run pytest && uv run mypy src && uv run pylint src
 ```
 
-## 📦 Dependencies
+## Dependencies
 
 - **customtkinter**: Modern GUI framework
 - **cryptography**: Encryption and security
@@ -190,7 +163,7 @@ uv run pytest && uv run mypy src && uv run pylint src
 
 All dependencies are managed through `pyproject.toml` and installed automatically via `uv`.
 
-## 🔧 Configuration
+## Configuration
 
 The project uses `pyproject.toml` for all configuration:
 
@@ -200,7 +173,7 @@ The project uses `pyproject.toml` for all configuration:
 - **Type checking**: mypy with strict settings
 - **Linting**: pylint with 120 character line limit
 
-## 📝 Environment Variables
+## Environment Variables
 
 Create a `.env` file in the project root for custom configuration (optional):
 
@@ -209,7 +182,7 @@ HOST=127.0.0.1
 PORT=5050
 ```
 
-## 🤝 Contributing
+## Contributing
 
 1. Create a feature branch
 2. Make your changes
@@ -218,17 +191,17 @@ PORT=5050
 5. Run linter: `uv run pylint src`
 6. Ensure all checks pass before submitting
 
-## 🔒 Security Notes
+##  Security Notes
 
 - Server keys are stored in `server.key` (excluded from git)
 - Database is stored in `data/data.db` (excluded from git)
 - Never commit `.env` files or private keys
 
-## 📄 License
+##  License
 
 Course Project - Educational Use
 
-## 🙋 Support
+## Support
 
 For issues or questions about setup:
 1. Ensure Python 3.10+ is installed: `python --version`

@@ -23,7 +23,6 @@ class ChatServer:
         self.clients: Dict[str, socket.socket] = {}
         self.db: Database = Database()
 
-        # Load or generate the persistent key
         self.crypto: CryptoManager = CryptoManager()
         self.session_key: str = self.crypto.get_key_as_string()
         print(f"[SECURITY] Session key loaded: {self.session_key[:10]}...")
@@ -53,10 +52,8 @@ class ChatServer:
 
                 self._trim_request_inputs(req)
 
-                # Use a helper method to reduce branching in the main loop
                 new_user = self._process_action(conn, req, current_user)
 
-                # If login was successful, update current_user
                 if new_user:
                     current_user = new_user
 
@@ -144,10 +141,8 @@ class ChatServer:
         recipient = req["to"]
         text = req["text"]
 
-        # 1. Store in DB (History)
         self.db.store_message(current_user, recipient, text)
 
-        # 2. Live Delivery
         if recipient.startswith("#"):
             for m in self.db.get_group_members(recipient):
                 if m in self.clients and m != current_user:

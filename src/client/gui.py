@@ -148,10 +148,10 @@ class MessengerApp(ctk.CTk):  # type: ignore[misc]
         ).pack(fill="x", pady=2)
 
         # 2. PUBLIC ROOMS
-        # FIX: Removed unnecessary lambda (Pylint W0108)
+
         ctk.CTkButton(
             self.tab_public, text="🔄 Refresh Rooms",
-            command=self.client.refresh_data,  # Direct reference
+            command=self.client.refresh_data,
             height=25, fg_color="#e67e22"
         ).pack(fill="x", pady=5)
 
@@ -173,10 +173,10 @@ class MessengerApp(ctk.CTk):  # type: ignore[misc]
         ).pack(fill="x", pady=2)
 
         # 3. ONLINE
-        # FIX: Removed unnecessary lambda (Pylint W0108)
+
         ctk.CTkButton(
             self.tab_online, text="🔄 Refresh",
-            command=self.client.refresh_data,  # Direct reference
+            command=self.client.refresh_data,
             height=25
         ).pack(fill="x", pady=5)
         self.online_scroll = ctk.CTkScrollableFrame(self.tab_online, fg_color="transparent")
